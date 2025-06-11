@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar" class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">✈️ 항공권 예약</a>
+        <div class="navbar-menu">
+            <th:block th:if="${session.memberId != null}">
+                <a href="/reservations/my">예약 조회</a>
+                <a href="/reservations/my">취소 조회</a>
+                <a href="/members/logout">로그아웃</a>
+            </th:block>
+            <th:block th:unless="${session.memberId != null}">
+                <a href="/members/login">로그인</a>
+                <a href="/members/signup">회원가입</a>
+            </th:block>
+        </div>
+    </div>
+</nav>
+</html> 

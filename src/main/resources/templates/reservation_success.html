@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/header :: header}"></head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+    
+    <div class="container">
+        <div class="card">
+            <div class="alert alert-success" style="text-align: center;">
+                <h1>✈️ 예약이 완료되었습니다!</h1>
+            </div>
+            
+            <div class="reservation-details">
+                <h2>예약 정보</h2>
+                <div class="card">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <strong>예약 번호</strong>
+                            <p th:text="${reservation.reservationId}"></p>
+                        </div>
+                        <div>
+                            <strong>예약일</strong>
+                            <p th:text="${#temporals.format(reservation.reservationDate, 'yyyy년 MM월 dd일')}"></p>
+                        </div>
+                        <div>
+                            <strong>결제 금액</strong>
+                            <p th:text="${#numbers.formatInteger(reservation.price, 0, 'COMMA') + '원'}"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2>항공편 정보</h2>
+                <div class="card flight-card">
+                    <div class="flight-info">
+                        <div>
+                            <div class="flight-time" th:text="${#temporals.format(reservation.flight.departureTime, 'HH:mm')}"></div>
+                            <div th:text="${reservation.flight.departureAirport}"></div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div>✈️</div>
+                            <div th:text="${reservation.flight.flightName}"></div>
+                        </div>
+                        <div>
+                            <div class="flight-time" th:text="${#temporals.format(reservation.flight.arrivalTime, 'HH:mm')}"></div>
+                            <div th:text="${reservation.flight.arrivalAirport}"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="/reservations/my" class="btn btn-primary">내 예약 목록 보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

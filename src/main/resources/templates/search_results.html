@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/header :: header}"></head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+    
+    <div class="container">
+        <div class="card">
+            <h1>검색 결과</h1>
+            <div class="search-summary">
+                <p>
+                    <strong th:text="${param.departureAirport}"></strong> →
+                    <strong th:text="${param.arrivalAirport}"></strong>
+                    <span th:text="${formattedDate}"></span>
+                </p>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(flights)}" class="alert alert-error">
+                <p>검색 조건에 맞는 항공편이 없습니다.</p>
+                <a href="/" class="btn btn-primary" style="margin-top: 1rem;">다시 검색</a>
+            </div>
+            
+            <div th:unless="${#lists.isEmpty(flights)}" class="flight-list">
+                <div th:each="flight : ${flights}" class="card flight-card">
+                    <div class="flight-info">
+                        <div>
+                            <div class="flight-time" th:text="${#temporals.format(flight.departureTime, 'HH:mm')}">
+                            </div>
+                            <div th:text="${flight.departureAirport}"></div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div>✈️</div>
+                            <div th:text="${flight.flightName}"></div>
+                        </div>
+                        <div>
+                            <div class="flight-time" th:text="${#temporals.format(flight.arrivalTime, 'HH:mm')}">
+                            </div>
+                            <div th:text="${flight.arrivalAirport}"></div>
+                        </div>
+                        <div>
+                            <div>요금</div>
+                            <div th:text="${#numbers.formatInteger(flight.fee, 0, 'COMMA') + '원'}"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <form th:action="@{/reservations}" method="post">
+                            <input type="hidden" name="flightId" th:value="${flight.flightId}">
+                            <button type="submit" class="btn btn-secondary">예약하기</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
