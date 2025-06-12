@@ -1,4 +1,4 @@
-package com.admin.backend_answer.dto;
+package com.admin.CNU_airline_reservation.dto;
 
 public record LoginRequest(
         String email,

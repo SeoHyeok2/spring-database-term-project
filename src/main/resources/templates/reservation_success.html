@@ -10,21 +10,21 @@
                 <h1>✈️ 예약이 완료되었습니다!</h1>
             </div>
             
-            <div class="reservation-details">
+            <div class="reserve-details">
                 <h2>예약 정보</h2>
                 <div class="card">
                     <div style="display: grid; gap: 1rem;">
                         <div>
                             <strong>예약 번호</strong>
-                            <p th:text="${reservation.reservationId}"></p>
+                            <p th:text="${reserve.reservationId}"></p>
                         </div>
                         <div>
                             <strong>예약일</strong>
-                            <p th:text="${#temporals.format(reservation.reservationDate, 'yyyy년 MM월 dd일')}"></p>
+                            <p th:text="${#temporals.format(reserve.reservationDate, 'yyyy년 MM월 dd일')}"></p>
                         </div>
                         <div>
                             <strong>결제 금액</strong>
-                            <p th:text="${#numbers.formatInteger(reservation.price, 0, 'COMMA') + '원'}"></p>
+                            <p th:text="${#numbers.formatInteger(reserve.price, 0, 'COMMA') + '원'}"></p>
                         </div>
                     </div>
                 </div>
@@ -33,22 +33,22 @@
                 <div class="card flight-card">
                     <div class="flight-info">
                         <div>
-                            <div class="flight-time" th:text="${#temporals.format(reservation.flight.departureTime, 'HH:mm')}"></div>
-                            <div th:text="${reservation.flight.departureAirport}"></div>
+                            <div class="flight-time" th:text="${#temporals.format(reserve.flight.departureTime, 'HH:mm')}"></div>
+                            <div th:text="${reserve.flight.departureAirport}"></div>
                         </div>
                         <div style="text-align: center;">
                             <div>✈️</div>
-                            <div th:text="${reservation.flight.flightName}"></div>
+                            <div th:text="${reserve.flight.flightName}"></div>
                         </div>
                         <div>
-                            <div class="flight-time" th:text="${#temporals.format(reservation.flight.arrivalTime, 'HH:mm')}"></div>
-                            <div th:text="${reservation.flight.arrivalAirport}"></div>
+                            <div class="flight-time" th:text="${#temporals.format(reserve.flight.arrivalTime, 'HH:mm')}"></div>
+                            <div th:text="${reserve.flight.arrivalAirport}"></div>
                         </div>
                     </div>
                 </div>
                 
                 <div style="margin-top: 2rem; text-align: center;">
-                    <a href="/reservations/my" class="btn btn-primary">내 예약 목록 보기</a>
+                    <a href="/reserves/my" class="btn btn-primary">내 예약 목록 보기</a>
                 </div>
             </div>
         </div>

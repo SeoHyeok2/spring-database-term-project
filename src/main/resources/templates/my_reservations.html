@@ -8,39 +8,39 @@
         <div class="card">
             <h1>내 예약 목록 ✈️</h1>
             
-            <div th:if="${#lists.isEmpty(reservations)}" class="alert alert-info">
+            <div th:if="${#lists.isEmpty(reserves)}" class="alert alert-info">
                 <p>예약된 항공편이 없습니다.</p>
             </div>
             
-            <div th:unless="${#lists.isEmpty(reservations)}" class="reservation-list">
-                <div th:each="reservation : ${reservations}" class="card reservation-card">
-                    <div class="reservation-info">
+            <div th:unless="${#lists.isEmpty(reserves)}" class="reserve-list">
+                <div th:each="reserve : ${reserves}" class="card reserve-card">
+                    <div class="reserve-info">
                         <div>
-                            <strong>예약 번호:</strong> <span th:text="${reservation.reservationId}"></span>
+                            <strong>예약 번호:</strong> <span th:text="${reserve.reservationId}"></span>
                         </div>
                         <div>
-                            <strong>항공편:</strong> <span th:text="${reservation.flight.flightName}"></span>
+                            <strong>항공편:</strong> <span th:text="${reserve.flight.flightName}"></span>
                         </div>
                         <div>
                             <strong>출발:</strong> 
-                            <span th:text="${reservation.flight.departureAirport}"></span>
-                            (<span th:text="${#temporals.format(reservation.flight.departureTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            <span th:text="${reserve.flight.departureAirport}"></span>
+                            (<span th:text="${#temporals.format(reserve.flight.departureTime, 'yyyy-MM-dd HH:mm')}"></span>)
                         </div>
                         <div>
                             <strong>도착:</strong> 
-                            <span th:text="${reservation.flight.arrivalAirport}"></span>
-                            (<span th:text="${#temporals.format(reservation.flight.arrivalTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            <span th:text="${reserve.flight.arrivalAirport}"></span>
+                            (<span th:text="${#temporals.format(reserve.flight.arrivalTime, 'yyyy-MM-dd HH:mm')}"></span>)
                         </div>
                         <div>
                             <strong>가격:</strong> 
-                            <span th:text="${#numbers.formatInteger(reservation.flight.fee, 0, 'COMMA') + '원'}"></span>
+                            <span th:text="${#numbers.formatInteger(reserve.flight.fee, 0, 'COMMA') + '원'}"></span>
                         </div>
                         <div>
                             <strong>예약일:</strong> 
-                            <span th:text="${#temporals.format(reservation.reservationDate, 'yyyy-MM-dd HH:mm')}"></span>
+                            <span th:text="${#temporals.format(reserve.reservationDate, 'yyyy-MM-dd HH:mm')}"></span>
                         </div>
-                        <div class="reservation-actions">
-                            <form th:action="@{/reservations/{id}/cancel(id=${reservation.reservationId})}" 
+                        <div class="reserve-actions">
+                            <form th:action="@{/reserves/{id}/cancel(id=${reserve.reservationId})}"
                                   method="post" 
                                   onsubmit="return confirm('정말로 이 예약을 취소하시겠습니까?');">
                                 <button type="submit" class="btn btn-danger">예약 취소</button>

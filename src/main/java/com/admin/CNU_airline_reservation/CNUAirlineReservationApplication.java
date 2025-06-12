@@ -1,13 +1,13 @@
-package com.admin.backend_answer;
+package com.admin.CNU_airline_reservation;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BackendAnswerApplication {
+public class CNUAirlineReservationApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BackendAnswerApplication.class, args);
+        SpringApplication.run(CNUAirlineReservationApplication.class, args);
     }
 
 }
