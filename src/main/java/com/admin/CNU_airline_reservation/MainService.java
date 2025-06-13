@@ -23,12 +23,11 @@ public class MainService {
     private final ReserveRepository reserveRepository;
     private final SeatsRepository seatsRepository;
 
-    public Customer login(String cno, String password) {
-        Optional<Customer> customer = customerRepository.findByCnoAndPasswd(cno, password);
-        if(customer.isEmpty()){
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
-        }
-        return customer.get();
+    // 1. 반환 타입을 Optional<Customer>로 변경
+    public Optional<Customer> login(String cno, String password) {
+        // 2. 예외를 던지는 if문 삭제
+        // 3. 리포지토리가 반환한 Optional 객체를 그대로 컨트롤러에 전달
+        return customerRepository.findByCnoAndPasswd(cno, password);
     }
 
     @Transactional(readOnly = true)

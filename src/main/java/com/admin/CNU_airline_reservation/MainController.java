@@ -12,10 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -49,13 +51,26 @@ public class MainController {
     /** 로그인 처리 */
     @PostMapping("/members/login")
     public String processLogin(@ModelAttribute LoginRequest loginRequest,
-                               HttpSession session) {
-        String cno = loginRequest.cno();
-        String password = loginRequest.password();
-        Customer customer = mainService.login(cno, password);
-        session.setAttribute("cno", customer.getCno());
-        session.setAttribute("name", customer.getName());
-        return "redirect:/";
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) { // 1. RedirectAttributes 추가
+
+        // 2. 서비스 메소드가 Optional<Customer>를 반환한다고 가정
+        Optional<Customer> loginResult = mainService.login(loginRequest.cno(), loginRequest.password());
+
+        // 3. 로그인 성공/실패 여부 확인
+        if (loginResult.isPresent()) {
+            // 4. 로그인 성공 시
+            Customer customer = loginResult.get();
+            session.setAttribute("cno", customer.getCno());
+            session.setAttribute("name", customer.getName());
+            return "redirect:/"; // 메인 페이지로 이동
+
+        } else {
+            // 5. 로그인 실패 시
+            // ?error=true 파라미터를 붙여서 리다이렉트
+            redirectAttributes.addAttribute("error", true);
+            return "redirect:/members/login";
+        }
     }
 
     /** 로그아웃 처리 */
