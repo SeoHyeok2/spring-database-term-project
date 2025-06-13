@@ -50,9 +50,9 @@ public class MainController {
     @PostMapping("/members/login")
     public String processLogin(@ModelAttribute LoginRequest loginRequest,
                                HttpSession session) {
-        String email = loginRequest.email();
+        String cno = loginRequest.cno();
         String password = loginRequest.password();
-        Customer customer = mainService.login(email, password);
+        Customer customer = mainService.login(cno, password);
         session.setAttribute("cno", customer.getCno());
         session.setAttribute("name", customer.getName());
         return "redirect:/";
@@ -70,8 +70,9 @@ public class MainController {
     public String showSearchResults(Model model,
                                   @RequestParam String departureAirport,
                                   @RequestParam String arrivalAirport,
-                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate) {
-        List<Airplane> airplanes = mainService.searchAirplanes(departureAirport, arrivalAirport, departureDate);
+                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+                                  @RequestParam(name = "sort", required = false, defaultValue = "time") String sortOption) {
+        List<Airplane> airplanes = mainService.searchAirplanes(departureAirport, arrivalAirport, departureDate, sortOption);
         model.addAttribute("airplanes", airplanes);
         model.addAttribute("formattedDate", 
             departureDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
@@ -88,8 +89,8 @@ public class MainController {
         if (cno == null) {
             return "redirect:/members/login";
         }
-        
-        Reserve reserve = mainService.makeReservation(cno, flightNo, departureDateTime, seatClass);
+
+//        Reserve reserve = mainService.makeReservation(cno, flightNo, departureDateTime, seatClass);
         return "redirect:/reservations/success?reservationId=" + cno;
     }
 

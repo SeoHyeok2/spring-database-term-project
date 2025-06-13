@@ -54,43 +54,45 @@
             </div>
 
             <div th:unless="${#lists.isEmpty(airplanes)}" class="flight-list">
-                <div th:each="airplane : ${airplanes}" class="card flight-card">
-                    <div class="flight-info" style="display: flex; justify-content: space-between; align-items: center; gap: 2rem; padding: 1rem 0;">
-                        <div style="text-align: left;">
-                            <div th:text="${airplane.airline}" style="font-weight: bold;"></div>
-                        </div>
-                        <!-- 출발 정보 -->
-                        <div style="text-align: left;">
-                            <div style="font-size: 2rem;">✈️</div>
-                            <div th:text="${airplane.flightNo}" style="font-size: 1.1rem; font-weight: bold;"></div>
-                        </div>
-                        <!-- 비행기 아이콘 및 편명 -->
-                        <div style="text-align: center;">
+
+                <div th:each="airplane : ${airplanes}" class="card flight-card" style="margin-bottom: 1.5rem; padding: 1rem;">
+
+                    <div class="flight-info" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1rem;">
+                        <div>
                             <div class="flight-time" th:text="${#temporals.format(airplane.departureDateTime, 'MM/dd HH:mm')}"></div>
-                            <div th:text="${airplane.departureAirport}" style="font-weight: bold;"></div>
+                            <div th:text="${airplane.departureAirport}"></div>
                         </div>
-                        <!-- 도착 정보 -->
-                        <div style="text-align: right;">
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold;" th:text="${airplane.airline}"></div>
+                            <div th:text="${airplane.flightNo}"></div>
+                        </div>
+                        <div>
                             <div class="flight-time" th:text="${#temporals.format(airplane.arrivalDateTime, 'MM/dd HH:mm')}"></div>
-                            <div th:text="${airplane.arrivalAirport}" style="font-weight: bold;"></div>
-                        </div>
-                    </div>
-                    <!-- 좌석 정보 (여러 좌석 클래스가 있을 경우) -->
-                    <div class="seats-info" style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
-                        <div th:each="seat : ${airplane.seats}" style="border: 1px solid #eee; border-radius: 6px; padding: 0.5rem 1rem; background: #fafbfc;">
-                            <div th:text="${seat.seatClass}" style="font-weight: bold; margin-bottom: 0.3rem;"></div>
-                            <div th:text="${#numbers.formatInteger(seat.price, 0, 'COMMA') + '원'}"></div>
-                            <div th:text="${seat.no_of_seats + '석 남음'}"></div>
+                            <div th:text="${airplane.arrivalAirport}"></div>
                         </div>
                     </div>
 
-                    <div>
-                        <form th:action="@{/reserves}" method="post">
-                            <input type="hidden" name="flightNo" th:value="${airplane.flightNo}">
-                            <input type="hidden" name="departureDateTime" th:value="${airplane.departureDateTime}">
-<!--                            <input type="hidden" name="seatClass" th:value="${seat.seatClass}">-->
-                            <button type="submit" class="btn btn-secondary">예약하기</button>
-                        </form>
+                    <div class="seats-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+
+                        <div th:each="seat : ${airplane.seats}" class="seat-card" style="border: 1px solid #ddd; border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="font-weight: bold; margin-bottom: 0.5rem;">
+                                <span class="badge" th:text="${seat.seatClass}">Economy</span>
+                            </div>
+                            <div style="font-size: 1.1em; font-weight: bold; color: #0056b3; margin-bottom: 0.5rem;">
+                                <span th:text="${#numbers.formatInteger(seat.price, 0, 'COMMA') + '원'}"></span>
+                            </div>
+                            <div style="font-size: 0.9em; color: #555; margin-bottom: 1rem;">
+                                <span th:text="${'잔여: ' + seat.no_of_seats + '석'}"></span>
+                            </div>
+                            <div>
+                                <form th:action="@{/reservations}" method="post">
+                                    <input type="hidden" name="flightNo" th:value="${airplane.flightNo}">
+                                    <input type="hidden" name="departureDateTime" th:value="${airplane.departureDateTime}">
+                                    <input type="hidden" name="seatClass" th:value="${seat.seatClass}">
+                                    <button type="submit" class="btn btn-secondary" th:disabled="${seat.no_of_seats == 0}">예약하기</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

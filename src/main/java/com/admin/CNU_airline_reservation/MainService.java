@@ -23,31 +23,35 @@ public class MainService {
     private final ReserveRepository reserveRepository;
     private final SeatsRepository seatsRepository;
 
-    public Customer login(String email, String password) {
-        Optional<Customer> customer = customerRepository.findByEmailAndPasswd(email, password);
+    public Customer login(String cno, String password) {
+        Optional<Customer> customer = customerRepository.findByCnoAndPasswd(cno, password);
         if(customer.isEmpty()){
             throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
         }
         return customer.get();
     }
 
-    public List<Airplane> searchAirplanes(String departureAirport, String arrivalAirport, LocalDate departureDate) {
+    @Transactional(readOnly = true)
+    public List<Airplane> searchAirplanes(String departureAirport, String arrivalAirport, LocalDate departureDate, String sortOption) {
 
-        // 1. 넘어온 LocalDate로 '오늘의 시작' 시간 만들기
-        // 예: departureDate가 2025-06-13 이라면 -> 2025-06-13T00:00:00
-        LocalDateTime startOfDay = departureDate.atStartOfDay();
+        // 정렬 옵션에 따라 호출할 Repository 메소드를 분기 처리합니다.
+        if ("time".equals(sortOption)) {
+            // 출발 시간순 정렬
+            return airplaneRepository.findAirplanesByDateOrderByDepartureDateTimeAsc(
+                    departureAirport, arrivalAirport, departureDate
+            );
 
-        // 2. 넘어온 LocalDate로 '오늘의 끝' 시간 만들기
-        // 예: departureDate가 2025-06-13 이라면 -> 2025-06-13T23:59:59.999...
-        LocalDateTime endOfDay = departureDate.plusDays(1).atStartOfDay().minusNanos(1);
-
-        // 3. 가공한 시작 시간과 끝 시간을 전달하여 리포지토리 메소드 호출
-        return airplaneRepository.findAirplanesWithSeatsByConditions(
-                departureAirport,
-                arrivalAirport,
-                startOfDay,
-                endOfDay
-        );
+        } else if ("seats".equals(sortOption)) {
+            // 잔여 좌석순 정렬
+            return airplaneRepository.findAirplanesByDateOrderByNoOfSeatsDesc(
+                    departureAirport, arrivalAirport, departureDate
+            );
+        } else {
+            // 기본값: 요금순 정렬
+            return airplaneRepository.findAirplanesByDateOrderByPriceAsc(
+                    departureAirport, arrivalAirport, departureDate
+            );
+        }
     }
 
     @Transactional
@@ -102,7 +106,7 @@ public class MainService {
     }
 
     public List<Airplane> findAllAirplanes() {
-        return airplaneRepository.findAllWithSeatsOrderByDepartureDateTimeAsc();
+        return airplaneRepository.findAllWithSeatsOrderByPriceAsc();
     }
 
 //    @Transactional

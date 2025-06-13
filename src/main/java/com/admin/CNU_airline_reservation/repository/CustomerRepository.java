@@ -15,7 +15,7 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
      * 2. @Query 없이 메소드 이름만으로 쿼리를 자동 생성
      * (엔티티의 필드명 'email', 'passwd'와 일치해야 함)
      */
-    Optional<Customer> findByEmailAndPasswd(String email, String passwd);
+    Optional<Customer> findByCnoAndPasswd(String cno, String passwd);
 
     /**
      * 이메일로 고객을 찾는 메소드 (중복 가입 확인 등)
