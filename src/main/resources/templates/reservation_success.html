@@ -15,35 +15,47 @@
                 <div class="card">
                     <div style="display: grid; gap: 1rem;">
                         <div>
-                            <strong>예약 번호</strong>
-                            <p th:text="${reserve.reservationId}"></p>
+                            <strong>항공편명</strong>
+                            <p th:text="${reserve.flightNo}"></p>
                         </div>
                         <div>
                             <strong>예약일</strong>
-                            <p th:text="${#temporals.format(reserve.reservationDate, 'yyyy년 MM월 dd일')}"></p>
+                            <p th:text="${#temporals.format(reserve.reserveDateTime, 'yyyy년 MM월 dd일')}"></p>
                         </div>
                         <div>
                             <strong>결제 금액</strong>
-                            <p th:text="${#numbers.formatInteger(reserve.price, 0, 'COMMA') + '원'}"></p>
+                            <p th:text="${#numbers.formatInteger(reserve.payment, 0, 'COMMA') + '원'}"></p>
                         </div>
                     </div>
                 </div>
-                
+
                 <h2>항공편 정보</h2>
-                <div class="card flight-card">
-                    <div class="flight-info">
-                        <div>
-                            <div class="flight-time" th:text="${#temporals.format(reserve.flight.departureTime, 'HH:mm')}"></div>
-                            <div th:text="${reserve.flight.departureAirport}"></div>
+                <div class="card flight-card" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px;">
+
+                    <div class="flight-info" style="display: flex; justify-content: space-between; align-items: center;">
+
+                        <div style="flex: 1; text-align: left;">
+                            <div class="flight-time" th:text="${#temporals.format(reserve.seatsRel.airplane.departureDateTime, 'MM/dd HH:mm')}"></div>
+                            <div th:text="${reserve.seatsRel.airplane.departureAirport}"></div>
                         </div>
-                        <div style="text-align: center;">
-                            <div>✈️</div>
-                            <div th:text="${reserve.flight.flightName}"></div>
+
+                        <div style="flex: 1; text-align: center;">
+                            <div style="font-weight: bold;" th:text="${reserve.seatsRel.airplane.airline + ' ✈️'}"></div>
+                            <div th:text="${reserve.seatsRel.airplane.flightNo}"></div>
                         </div>
-                        <div>
-                            <div class="flight-time" th:text="${#temporals.format(reserve.flight.arrivalTime, 'HH:mm')}"></div>
-                            <div th:text="${reserve.flight.arrivalAirport}"></div>
+
+                        <div style="flex: 1; text-align: center;">
+                            <div class="flight-time" th:text="${#temporals.format(reserve.seatsRel.airplane.arrivalDateTime, 'MM/dd HH:mm')}"></div>
+                            <div th:text="${reserve.seatsRel.airplane.arrivalAirport}"></div>
                         </div>
+
+                        <div style="flex: 1; text-align: right;">
+                            <div style="font-weight: bold;">좌석 등급</div>
+                            <div>
+                                <span class="badge" th:text="${reserve.seatClass}" style="margin-top: 0.25rem;"></span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 

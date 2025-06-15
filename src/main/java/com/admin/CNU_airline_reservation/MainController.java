@@ -94,31 +94,55 @@ public class MainController {
         return "search_results";
     }
 
-    /** 예약 생성 */
     @PostMapping("/reservations")
     public String makeReservation(@RequestParam String flightNo,
                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureDateTime,
                                   @RequestParam String seatClass,
-                                  HttpSession session) {
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+
         String cno = (String) session.getAttribute("cno");
         if (cno == null) {
             return "redirect:/members/login";
         }
 
-//        Reserve reserve = mainService.makeReservation(cno, flightNo, departureDateTime, seatClass);
-        return "redirect:/reservations/success?reservationId=" + cno;
-    }
+        try {
+            // 1. 예약을 생성합니다.
+            Reserve savedReserve = mainService.makeReservation(cno, flightNo, departureDateTime, seatClass);
 
-    /** 예약 완료 페이지 */
+            // 2. 성공 페이지로 리다이렉트할 URL을 만듭니다.
+            //    방금 만든 예약의 복합 키 정보들을 URL 파라미터로 모두 넘겨줍니다.
+            redirectAttributes.addAttribute("flightNo", savedReserve.getFlightNo());
+            redirectAttributes.addAttribute("departureDateTime", savedReserve.getDepartureDateTime().toString());
+            redirectAttributes.addAttribute("seatClass", savedReserve.getSeatClass());
+            // cno는 세션에 있으므로 굳이 넘길 필요는 없지만, 명확성을 위해 함께 넘겨줍니다.
+            redirectAttributes.addAttribute("cno", cno);
+
+            return "redirect:/reservations/success";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "예약에 실패했습니다: " + e.getMessage());
+            return "redirect:/"; // 에러 발생 시 메인 페이지로
+        }
+    }
+    
+    /**
+     * 예약 완료 페이지 조회 (GET 방식)
+     */
     @GetMapping("/reservations/success")
-    public String showReservationSuccess(@RequestParam String cno,
-                                         @RequestParam String flightNo,
-                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureDateTime,
-                                         @RequestParam String seatClass,
-                                         Model model) {
+    public String showReservationSuccess(
+            // 3. 리다이렉트된 URL의 파라미터들을 받습니다.
+            @RequestParam String cno,
+            @RequestParam String flightNo,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureDateTime,
+            @RequestParam String seatClass,
+            Model model) {
+
+        // 4. 받은 키 값들로 예약 정보를 다시 조회합니다.
         Reserve reserve = mainService.getReservation(cno, flightNo, departureDateTime, seatClass);
         model.addAttribute("reserve", reserve);
-        return "reservation_success";
+
+        return "reservation_success"; // templates/reservation_success.html
     }
 
     /** 내 예약 목록 조회 */

@@ -16,7 +16,7 @@
                 <div th:each="reserve : ${reserves}" class="card reserve-card">
                     <div class="reserve-info">
                         <div>
-                            <strong>예약 번호:</strong> <span th:text="${reserve.reservationId}"></span>
+                            <strong>예약 번호:</strong> <span th:text="${reserve.flightNo}"></span>
                         </div>
                         <div>
                             <strong>항공편:</strong> <span th:text="${reserve.flight.flightName}"></span>

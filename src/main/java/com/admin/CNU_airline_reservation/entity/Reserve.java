@@ -14,9 +14,6 @@ import lombok.NoArgsConstructor;
 @IdClass(ReservePK.class)
 public class Reserve {
 
-    // --- 여기부터 복합 기본 키(PK)이자 외래 키(FK) ---
-    // ReserveId 클래스의 필드명과 정확히 일치해야 합니다.
-
     @Id
     @Column(name = "cno", length = 50) // Customer의 cno와 매핑될 컬럼
     private String customer;
