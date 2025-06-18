@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>CNU 항공 탑승권</title>
+</head>
+<body style="font-family: sans-serif; margin: 2rem;">
+    <div style="border: 1px solid #ddd; padding: 2rem; border-radius: 8px;">
+      <h1 style="color: #0056b3;">✈️ 탑승권 (Boarding Pass)</h1>
+      <p>
+        <strong th:text="${customerName}">홍길동</strong> 님, CNU 항공 예약이 확정되었습니다.
+      </p>
+      <hr>
+      <h2>예약 정보</h2>
+      <p><strong>예약일:</strong> <span th:text="${#temporals.format(reservationTime, 'yyyy년 MM월 dd일 HH:mm')}"></span></p>
+
+      <h2>항공편 정보</h2>
+      <p><strong>항공사:</strong> <span th:text="${airline}"></span></p>
+      <p><strong>항공편명:</strong> <span th:text="${flightNo}"></span></p>
+      <p><strong>좌석 등급:</strong> <span th:text="${seatClass}"></span></p>
+
+      <h3>출발</h3>
+      <p th:text="${departureAirport} + '에서 ' + ${#temporals.format(departureDateTime, 'yyyy년 MM월 dd일 HH:mm')}"></p>
+
+      <h3>도착</h3>
+      <p th:text="${arrivalAirport} + '에서 ' + ${#temporals.format(arrivalDateTime, 'yyyy년 MM월 dd일 HH:mm')}"></p>
+      <hr>
+      <p>이용해주셔서 감사합니다.</p>
+    </div>
+</body>
+</html>

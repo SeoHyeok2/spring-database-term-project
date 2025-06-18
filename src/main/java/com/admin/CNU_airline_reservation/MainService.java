@@ -1,6 +1,7 @@
 package com.admin.CNU_airline_reservation;
 
 
+import com.admin.CNU_airline_reservation.dto.BoardingPassDTO;
 import com.admin.CNU_airline_reservation.entity.*;
 import com.admin.CNU_airline_reservation.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,8 @@ public class MainService {
     private final SeatsRepository seatsRepository;
     private final ReserveRepository reserveRepository;
     private final CancelRepository cancelRepository;
+
+    private final EmailService emailService;
 
     public List<Airplane> findAllAirplanes() {
         return airplaneRepository.findAllWithSeatsOrderByPriceAsc();
@@ -105,8 +108,30 @@ public class MainService {
 
                 .build();
 
-        // 4. JpaRepository의 save() 메소드에는 엔티티 객체 하나만 전달
-        return reserveRepository.save(newReserve);
+        // 1. 예약을 DB에 먼저 저장하고, 저장된 객체를 받음
+        Reserve savedReserve = reserveRepository.save(newReserve);
+
+        // --- 여기가 핵심 변경 부분 ---
+        // 1. 저장된 엔티티에서 DTO에 필요한 모든 정보를 미리 추출합니다.
+        BoardingPassDTO boardingPassInfo = BoardingPassDTO.builder()
+                .customerName(savedReserve.getCustomerRel().getName())
+                .customerEmail(savedReserve.getCustomerRel().getEmail())
+                .reservationTime(savedReserve.getReserveDateTime())
+                .airline(savedReserve.getSeatsRel().getAirplane().getAirline())
+                .flightNo(savedReserve.getFlightNo())
+                .seatClass(savedReserve.getSeatClass())
+                .departureAirport(savedReserve.getSeatsRel().getAirplane().getDepartureAirport())
+                .departureDateTime(savedReserve.getDepartureDateTime())
+                .arrivalAirport(savedReserve.getSeatsRel().getAirplane().getArrivalAirport())
+                .arrivalDateTime(savedReserve.getSeatsRel().getAirplane().getArrivalDateTime())
+                .build();
+
+        // 2. 엔티티 대신, 정보가 모두 담긴 DTO를 이메일 서비스에 전달합니다.
+        emailService.sendBoardingPass(boardingPassInfo);
+        // -------------------------
+
+        // 3. 저장된 예약 객체를 반환
+        return savedReserve;
     }
 
     public Reserve getReservation(String cno, String flightNo, LocalDateTime departureDateTime, String seatClass) {
