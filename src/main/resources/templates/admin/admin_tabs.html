@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="stat_tabs" class="tabs-container" style="margin-bottom: 2rem; border-bottom: 2px solid #eee; padding-bottom: 1rem;">
+
+  <a th:href="@{/stats/reservations}"
+     class="btn" th:classappend="${activeStat == 'reservations' ? 'btn-primary active' : 'btn-secondary'}">
+    예약 통계
+  </a>
+
+  <a th:href="@{/stats/cancellations}"
+     class="btn" th:classappend="${activeStat == 'cancellations' ? 'btn-primary active' : 'btn-secondary'}">
+    취소 통계
+  </a>
+
+</div>
+
+</body>
+</html>

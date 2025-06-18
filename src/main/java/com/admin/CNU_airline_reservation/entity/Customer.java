@@ -32,9 +32,6 @@ public class Customer {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reserve> reserves = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Cancel> cancels = new ArrayList<>();
-
     @Builder
     public Customer(String cno, String name, String passwd, String email, String passportNumber) {
         this.cno = cno;

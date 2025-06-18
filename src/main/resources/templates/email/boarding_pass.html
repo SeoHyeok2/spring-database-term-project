@@ -20,10 +20,10 @@
       <p><strong>좌석 등급:</strong> <span th:text="${seatClass}"></span></p>
 
       <h3>출발</h3>
-      <p th:text="${departureAirport} + '에서 ' + ${#temporals.format(departureDateTime, 'yyyy년 MM월 dd일 HH:mm')}"></p>
+      <p th:text="${departureAirport} + ' (' + ${#temporals.format(departureDateTime, 'yyyy년 MM월 dd일 HH:mm')} + ')'"></p>
 
       <h3>도착</h3>
-      <p th:text="${arrivalAirport} + '에서 ' + ${#temporals.format(arrivalDateTime, 'yyyy년 MM월 dd일 HH:mm')}"></p>
+      <p th:text="${arrivalAirport} + ' (' + ${#temporals.format(arrivalDateTime, 'yyyy년 MM월 dd일 HH:mm') + ')'}"></p>
       <hr>
       <p>이용해주셔서 감사합니다.</p>
     </div>

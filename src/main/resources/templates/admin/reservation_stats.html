@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:replace="~{layout/header :: header}"></head>
+    <meta charset="UTF-8">
+    <title>예약 통계</title>
+    <style>
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        h1 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse; /* 테이블 테두리를 한 줄로 만듭니다. */
+            margin-top: 1.5rem;
+        }
+        th, td {
+            padding: 12px 15px; /* 셀 내부에 여백을 줍니다. */
+            border-bottom: 1px solid #ddd; /* 각 행 아래에 구분선을 넣습니다. */
+            text-align: left;
+        }
+        thead th {
+            background-color: #f2f2f2; /* 헤더에 배경색을 줍니다. */
+            font-weight: bold;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9; /* 짝수 행에 배경색을 줍니다 (지브라 스트라이핑). */
+        }
+        tbody tr:hover {
+            background-color: #e9ecef; /* 마우스를 올리면 배경색이 바뀝니다. */
+        }
+        .text-right {
+            text-align: right; /* 숫자 오른쪽 정렬을 위한 클래스 */
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="container">
+        <div class="card">
+            <div th:replace="~{admin/admin_tabs :: stat_tabs}"></div>
+
+            <h1>예약 통계 📊</h1>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>운항편명</th>
+                    <th>좌석등급</th>
+                    <th class="text-right">예약수</th>
+                    <th class="text-right">지불금액</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="stat : ${reservationStats}">
+                    <td th:text="${stat.get운항편명()}"></td>
+                    <td th:text="${stat.get좌석등급()}"></td>
+                    <td class="text-right" th:text="${stat.get예약수()}"></td>
+                    <td class="text-right" th:text="${#numbers.formatInteger(stat.get지불금액(), 0, 'COMMA') + '원'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

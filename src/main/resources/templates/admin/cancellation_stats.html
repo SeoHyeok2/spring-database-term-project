@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:replace="~{layout/header :: header}"></head>
+    <meta charset="UTF-8">
+    <title>취소 통계</title>
+    <style>
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        h1 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left; /* 기본 정렬은 왼쪽 */
+        }
+        thead th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
+        .text-right {
+            text-align: right; /* 오른쪽 정렬을 위한 클래스 */
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{layout/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="card">
+        <div th:replace="~{admin/admin_tabs :: stat_tabs}"></div>
+
+        <h1>취소 통계 📊</h1>
+
+        <table>
+            <thead>
+            <tr>
+                <th>운항편명</th>
+                <th>회원번호</th>
+                <th>좌석등급</th>
+                <th class="text-right">환불금액</th>
+                <th class="text-right">취소순위</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="stat : ${cancellationStats}">
+                <td th:text="${stat.get운항편명()}"></td>
+                <td th:text="${stat.get회원번호()}"></td>
+                <td th:text="${stat.get좌석등급()}"></td>
+                <td class="text-right" th:text="${#numbers.formatInteger(stat.get환불금액(), 0, 'COMMA') + '원'}"></td>
+                <td class="text-right" th:text="${stat.get취소순위()}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

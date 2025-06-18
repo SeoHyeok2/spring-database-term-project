@@ -2,6 +2,8 @@ package com.admin.CNU_airline_reservation;
 
 
 import com.admin.CNU_airline_reservation.dto.BoardingPassDTO;
+import com.admin.CNU_airline_reservation.dto.CancellationStats;
+import com.admin.CNU_airline_reservation.dto.ReservationStats;
 import com.admin.CNU_airline_reservation.entity.*;
 import com.admin.CNU_airline_reservation.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -242,6 +244,14 @@ public class MainService {
             // 날짜 범위가 없는 경우 (기존 로직)
             return cancelRepository.findByCustomer(cno);
         }
+    }
+
+    public List<ReservationStats> getReservationStatistics() {
+        return reserveRepository.findReservationStats();
+    }
+
+    public List<CancellationStats> getCancellationStatistics() {
+        return cancelRepository.findCancellationStats();
     }
 
 }

@@ -1,6 +1,8 @@
 package com.admin.CNU_airline_reservation;
 
+import com.admin.CNU_airline_reservation.dto.CancellationStats;
 import com.admin.CNU_airline_reservation.dto.LoginRequest;
+import com.admin.CNU_airline_reservation.dto.ReservationStats;
 import com.admin.CNU_airline_reservation.entity.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -221,5 +223,27 @@ public class MainController {
         model.addAttribute("filterType", filterType);
 
         return "my_page"; // templates/my_page.html
+    }
+
+    @GetMapping("/stats/reservations")
+    public String showReservationStats(Model model) {
+        List<ReservationStats> stats = mainService.getReservationStatistics();
+        model.addAttribute("reservationStats", stats);
+
+        // 이 페이지가 '예약 통계'임을 View에 알려줍니다.
+        model.addAttribute("activeStat", "reservations");
+
+        return "admin/reservation_stats"; // templates/admin/stats_reservation.html
+    }
+
+    @GetMapping("/stats/cancellations")
+    public String showCancellationStats(Model model) {
+        List<CancellationStats> stats = mainService.getCancellationStatistics();
+        model.addAttribute("cancellationStats", stats);
+
+        // 이 페이지가 '취소 통계'임을 View에 알려줍니다.
+        model.addAttribute("activeStat", "cancellations");
+
+        return "admin/cancellation_stats"; // templates/admin/stats_reservation.html
     }
 }

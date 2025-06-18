@@ -5,6 +5,7 @@
         <a href="/" class="navbar-logo">✈️ 항공권 예약</a>
         <div class="navbar-menu">
             <th:block th:if="${session.cno != null}">
+                <a th:if="${session.cno == 'c0'}" href="/stats/reservations">통계 정보</a>
                 <a href="/members/my_page">마이 페이지</a>
                 <a href="/members/logout">로그아웃</a>
             </th:block>
