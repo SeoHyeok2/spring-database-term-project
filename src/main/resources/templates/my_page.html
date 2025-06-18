@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/header :: header}">
+    <style>
+        .filter-btn-group .btn.active {
+            background-color: #0056b3;
+            color: white;
+            border-color: #004a99;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h1>마이 페이지</h1>
+                <div class="filter-btn-group" style="display: flex; gap: 0.5rem;">
+                    <button id="btn-all" class="btn btn-primary active" onclick="filterHistory('all')">전체</button>
+                    <button id="btn-reserves" class="btn btn-secondary" onclick="filterHistory('reserves')">예약 내역</button>
+                    <button id="btn-cancels" class="btn btn-secondary" onclick="filterHistory('cancels')">취소 내역</button>
+                </div>
+            </div>
+
+            <div class="search-box" style="margin-bottom: 2rem;">
+                <form th:action="@{/members/my_page}" method="get" class="date-range-form">
+                    <input type="hidden" id="current-filter-type" name="filterType" th:value="${filterType}">
+
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="date" name="startDate" class="form-input" th:value="${startDate}">
+                        <span>~</span>
+                        <input type="date" name="endDate" class="form-input" th:value="${endDate}">
+                        <button type="submit" class="btn btn-primary">조회</button>
+                        <a th:href="@{/members/my_page}" class="btn btn-secondary">초기화</a>
+                    </div>
+                </form>
+            </div>
+
+            <div id="reserves-section">
+                <h1>내 예약 내역 ✈️</h1>
+
+                <div th:if="${#lists.isEmpty(reserves)}" class="alert alert-info">
+                    <p>예약된 항공편이 없습니다.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(reserves)}" class="reserve-list">
+                    <div th:each="reserve : ${reserves}" class="card reserve-card">
+                        <div class="reserve-info">
+                            <div>
+                                <strong>항공사:</strong> <span th:text="${reserve.seatsRel.airplane.airline}"></span>
+                            </div>
+                            <div>
+                                <strong>항공편:</strong> <span th:text="${reserve.flightNo}"></span>
+                            </div>
+                            <div>
+                                <strong>출발:</strong>
+                                <span th:text="${reserve.seatsRel.airplane.departureAirport}"></span>
+                                (<span th:text="${#temporals.format(reserve.departureDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            </div>
+                            <div>
+                                <strong>도착:</strong>
+                                <span th:text="${reserve.seatsRel.airplane.arrivalAirport}"></span>
+                                (<span th:text="${#temporals.format(reserve.seatsRel.airplane.arrivalDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            </div>
+                            <div>
+                                <strong>결제 금액:</strong>
+                                <span th:text="${#numbers.formatInteger(reserve.payment, 0, 'COMMA') + '원'}"></span>
+                            </div>
+                            <div>
+                                <strong>예약일:</strong>
+                                <span th:text="${#temporals.format(reserve.reserveDateTime, 'yyyy-MM-dd HH:mm')}"></span>
+                            </div>
+                            <div class="reserve-actions">
+                                <form th:action="@{/reservations/cancel}"
+                                      method="post"
+                                      onsubmit="return confirm(
+                                          '정말로 이 예약을 취소하시겠습니까?\n\n' +
+                                          '--- 취소 위약금 규정 ---\n' +
+                                          '출발 15일 이전: 150,000원\n' +
+                                          '출발 14일 ~ 4일 전: 180,000원\n' +
+                                          '출발 3일 전 ~ 1일 전: 250,000원\n' +
+                                          '출발 당일: 전액 환불 불가\n\n' +
+                                          '취소 후에는 되돌릴 수 없습니다.'
+                                      );">
+
+                                    <input type="hidden" name="flightNo" th:value="${reserve.flightNo}">
+                                    <input type="hidden" name="departureDateTime" th:value="${reserve.departureDateTime}">
+                                    <input type="hidden" name="seatClass" th:value="${reserve.seatClass}">
+
+                                    <button type="submit" class="btn btn-danger">예약 취소</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cancels-section">
+                <h1>내 취소 내역 ✖️</h1>
+
+                <div th:if="${#lists.isEmpty(cancels)}" class="alert alert-info">
+                    <p>취소된 항공편이 없습니다.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(cancels)}" class="cancel-list">
+                    <div th:each="cancel : ${cancels}" class="card cancel-card">
+                        <div class="cancel-info">
+                            <div>
+                                <strong>항공사:</strong> <span th:text="${cancel.seatsRel.airplane.airline}"></span>
+                            </div>
+                            <div>
+                                <strong>항공편:</strong> <span th:text="${cancel.flightNo}"></span>
+                            </div>
+                            <div>
+                                <strong>출발:</strong>
+                                <span th:text="${cancel.seatsRel.airplane.departureAirport}"></span>
+                                (<span th:text="${#temporals.format(cancel.departureDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            </div>
+                            <div>
+                                <strong>도착:</strong>
+                                <span th:text="${cancel.seatsRel.airplane.arrivalAirport}"></span>
+                                (<span th:text="${#temporals.format(cancel.seatsRel.airplane.arrivalDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            </div>
+                            <div>
+                                <strong>환불 금액:</strong>
+                                <span th:text="${#numbers.formatInteger(cancel.refund, 0, 'COMMA') + '원'}"></span>
+                            </div>
+                            <div>
+                                <strong>취소일:</strong>
+                                <span th:text="${#temporals.format(cancel.cancelDateTime, 'yyyy-MM-dd HH:mm')}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+
+        // 1. 페이지가 완전히 로드되었을 때 이 함수가 실행됩니다.
+        window.onload = function() {
+            // Controller가 Model에 담아준 현재 필터 상태를 가져옵니다. (페이지 최초 로드 시 'all')
+            const currentFilterFromServer = 'all';
+
+            // filterHistory 함수를 호출하여 화면을 올바른 상태로 복원합니다.
+            if (currentFilterFromServer) {
+                filterHistory(currentFilterFromServer);
+            }
+        };
+
+        // 2. 이 함수는 버튼 클릭 시, 그리고 페이지 로드 시 모두 사용됩니다.
+        function filterHistory(filterType) {
+            const reservesSection = document.getElementById('reserves-section');
+            const cancelsSection = document.getElementById('cancels-section');
+            const allButtons = document.querySelectorAll('.filter-btn-group .btn');
+
+            // 날짜 검색 시 현재 필터 상태를 함께 보내기 위해 hidden input 값을 업데이트합니다.
+            document.getElementById('current-filter-type').value = filterType;
+
+            // 클릭된 버튼에 따라 각 섹션을 보여주거나 숨깁니다.
+            if (filterType === 'all') {
+                reservesSection.style.display = 'block';
+                cancelsSection.style.display = 'block';
+            } else if (filterType === 'reserves') {
+                reservesSection.style.display = 'block';
+                cancelsSection.style.display = 'none';
+            } else if (filterType === 'cancels') {
+                reservesSection.style.display = 'none';
+                cancelsSection.style.display = 'block';
+            }
+
+            // 활성화된 버튼 스타일을 변경합니다.
+            allButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            const activeButton = document.getElementById('btn-' + filterType);
+            activeButton.classList.add('active', 'btn-primary');
+            activeButton.classList.remove('btn-secondary');
+        }
+    </script>
+</body>
+</html>

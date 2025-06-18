@@ -142,19 +142,6 @@ public class MainController {
         return "reservation_success"; // templates/reservation_success.html
     }
 
-    /** 내 예약 목록 조회 */
-    @GetMapping("/reservations/my")
-    public String viewMyReservations(Model model, HttpSession session) {
-        String cno = (String) session.getAttribute("cno");
-        if (cno == null) {
-            return "redirect:/members/login";
-        }
-        
-        List<Reserve> reserves = mainService.getMyReservations(cno);
-        model.addAttribute("reserves", reserves);
-        return "my_reservations";
-    }
-
     /**
      * 예약을 취소하고, Cancel 테이블에 기록을 생성합니다.
      */
@@ -191,7 +178,6 @@ public class MainController {
         }
     }
 
-
     /**
      * 예약 취소 완료 페이지를 보여줍니다.
      */
@@ -208,21 +194,32 @@ public class MainController {
         return "cancellation_success"; // templates/cancellation_success.html
     }
 
-
     /**
      * 내 취소 내역 목록을 보여줍니다.
      */
-    @GetMapping("/cancellations/my")
-    public String viewMyCancellations(Model model, HttpSession session) {
+    @GetMapping("/members/my_page")
+    public String viewMyPage(Model model,
+                             HttpSession session,
+                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                             @RequestParam(required = false, defaultValue = "all") String filterType) {
         String cno = (String) session.getAttribute("cno");
         if (cno == null) {
             return "redirect:/members/login";
         }
 
+        List<Reserve> reserves = mainService.getMyReservations(cno, startDate, endDate);
         // 서비스로부터 특정 고객의 모든 취소 내역을 받아옵니다.
-        List<Cancel> cancels = mainService.getMyCancellations(cno);
+        List<Cancel> cancels = mainService.getMyCancellations(cno, startDate, endDate);
+
+        model.addAttribute("reserves", reserves);
         model.addAttribute("cancels", cancels);
 
-        return "my_cancellations"; // templates/my_cancellations.html
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+
+        model.addAttribute("filterType", filterType);
+
+        return "my_page"; // templates/my_page.html
     }
 }

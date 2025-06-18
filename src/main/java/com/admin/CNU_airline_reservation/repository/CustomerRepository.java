@@ -17,11 +17,6 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
      */
     Optional<Customer> findByCnoAndPasswd(String cno, String passwd);
 
-    /**
-     * 이메일로 고객을 찾는 메소드 (중복 가입 확인 등)
-     */
-    Optional<Customer> findByEmail(String email);
-
     // 3. 아래 메소드들은 모두 삭제합니다.
     // findById(id) -> JpaRepository가 이미 기본 제공
     // saveMember(...) -> JPA에서는 repository.save(customer객체)를 사용하므로 불필요

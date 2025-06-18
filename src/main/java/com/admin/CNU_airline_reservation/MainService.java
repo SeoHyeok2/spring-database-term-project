@@ -115,8 +115,17 @@ public class MainService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 예약을 찾을 수 없습니다."));
     }
 
-    public List<Reserve> getMyReservations(String cno) {
-        return reserveRepository.findActiveReservationsByCustomerCno(cno);
+    // getMyActiveReservations 메소드 수정
+    public List<Reserve> getMyReservations(String cno, LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            // 날짜 범위가 지정된 경우
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay().minusNanos(1);
+            return reserveRepository.findActiveReservationsByCustomerCnoAndDateRange(cno, startDateTime, endDateTime);
+        } else {
+            // 날짜 범위가 없는 경우 (기존 로직)
+            return reserveRepository.findActiveReservationsByCustomerCno(cno);
+        }
     }
 
     /**
@@ -181,7 +190,7 @@ public class MainService {
                 .customerRel(reserveToCancel.getCustomerRel())
                 .seatsRel(reserveToCancel.getSeatsRel())
                 // 일반 데이터 필드 설정
-                .refund(finalRefundAmount) // 환불 금액은 결제 금액과 동일하다고 가정
+                .refund(finalRefundAmount)
                 .cancelDateTime(LocalDateTime.now())
                 .build();
 
@@ -197,11 +206,17 @@ public class MainService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 취소 내역을 찾을 수 없습니다."));
     }
 
-    /**
-     * 특정 사용자의 모든 취소 내역 목록을 조회합니다.
-     */
-    public List<Cancel> getMyCancellations(String cno) {
-        return cancelRepository.findByCustomer(cno);
+    // getMyCancellations 메소드 수정
+    public List<Cancel> getMyCancellations(String cno, LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            // 날짜 범위가 지정된 경우
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay().minusNanos(1);
+            return cancelRepository.findByCustomerAndCancelDateTimeBetween(cno, startDateTime, endDateTime);
+        } else {
+            // 날짜 범위가 없는 경우 (기존 로직)
+            return cancelRepository.findByCustomer(cno);
+        }
     }
 
 }
