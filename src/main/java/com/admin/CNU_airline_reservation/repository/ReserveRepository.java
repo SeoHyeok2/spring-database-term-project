@@ -17,16 +17,15 @@ import java.util.Optional;
 public interface ReserveRepository extends JpaRepository<Reserve, ReservePK> {
 
     /**
-     * 특정 고객의 모든 예약 목록을 최신순으로 조회합니다.
-     * 연관된 엔티티 정보(customer, seats)를 한 번에 가져오기 위해 JOIN FETCH 사용
-     * 2. 엔티티에 정의된 필드명(customer, cno)을 정확히 사용해야 합니다.
+     * 특정 고객의 예약 목록 중, Cancel 테이블에 존재하지 않는 (취소되지 않은) 예약만 조회합니다.
      */
-    @Query("SELECT r FROM Reserve r " +
-            "JOIN FETCH r.customerRel c " +
-            "JOIN FETCH r.seatsRel s " +
-            "WHERE c.cno = :cno " +
-            "ORDER BY r.reserveDateTime DESC")
-    List<Reserve> findByCustomerCnoWithDetails(@Param("cno") String cno);
+    @Query("SELECT r FROM Reserve r WHERE r.customer = :cno AND NOT EXISTS (" +
+            "  SELECT c FROM Cancel c WHERE c.customer = r.customer " +
+            "  AND c.flightNo = r.flightNo " +
+            "  AND c.departureDateTime = r.departureDateTime " +
+            "  AND c.seatClass = r.seatClass" +
+            ")")
+    List<Reserve> findActiveReservationsByCustomerCno(@Param("cno") String cno);
 
     /**
      * 특정 고객의 특정 좌석에 대한 가장 최근 예약을 조회합니다.

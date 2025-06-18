@@ -1,10 +1,7 @@
 package com.admin.CNU_airline_reservation;
 
 import com.admin.CNU_airline_reservation.dto.LoginRequest;
-import com.admin.CNU_airline_reservation.entity.Airplane;
-import com.admin.CNU_airline_reservation.entity.Customer;
-import com.admin.CNU_airline_reservation.entity.Reserve;
-import com.admin.CNU_airline_reservation.entity.SeatsPK;
+import com.admin.CNU_airline_reservation.entity.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -158,15 +155,74 @@ public class MainController {
         return "my_reservations";
     }
 
-//    /** 예약 취소 */
-//    @PostMapping("/reservations/{reservationId}/cancel")
-//    public String cancelReservation(@PathVariable Long reservationId, HttpSession session) {
-//        Long memberId = (Long) session.getAttribute("memberId");
-//        if (memberId == null) {
-//            return "redirect:/members/login";
-//        }
-//
-//        mainService.cancelReservation(reservationId, memberId);
-//        return "redirect:/reservations/my";
-//    }
+    /**
+     * 예약을 취소하고, Cancel 테이블에 기록을 생성합니다.
+     */
+    @PostMapping("/reservations/cancel")
+    public String processCancellation(@RequestParam String flightNo,
+                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureDateTime,
+                                      @RequestParam String seatClass,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
+        // 1. 세션에서 현재 로그인한 사용자 정보를 가져옵니다.
+        String cno = (String) session.getAttribute("cno");
+        if (cno == null) {
+            // 비로그인 사용자는 로그인 페이지로 보냅니다.
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:/members/login";
+        }
+
+        try {
+            // 2. 서비스에 취소 처리를 위임합니다.
+            Cancel cancelled = mainService.cancelReservation(cno, flightNo, departureDateTime, seatClass);
+
+            // 3. 성공 시, 취소 완료 페이지로 리다이렉트하며 식별 정보를 넘겨줍니다.
+            redirectAttributes.addAttribute("flightNo", cancelled.getFlightNo());
+            redirectAttributes.addAttribute("departureDateTime", cancelled.getDepartureDateTime().toString());
+            redirectAttributes.addAttribute("seatClass", cancelled.getSeatClass());
+            redirectAttributes.addAttribute("cno", cno);
+
+            return "redirect:/reservations/cancel/success";
+
+        } catch (Exception e) {
+            // 이미 취소된 예약이거나, 취소할 예약이 없는 경우 등
+            redirectAttributes.addFlashAttribute("errorMessage", "예약 취소에 실패했습니다: " + e.getMessage());
+            return "redirect:/reservations/my"; // 내 예약 목록으로 되돌아감
+        }
+    }
+
+
+    /**
+     * 예약 취소 완료 페이지를 보여줍니다.
+     */
+    @GetMapping("/reservations/cancel/success")
+    public String showCancellationSuccess(@RequestParam String cno,
+                                          @RequestParam String flightNo,
+                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime departureDateTime,
+                                          @RequestParam String seatClass,
+                                          Model model) {
+        // URL에 담겨온 키 값들로 특정 취소 내역을 다시 조회합니다.
+        Cancel cancel = mainService.getCancellation(cno, flightNo, departureDateTime, seatClass);
+        model.addAttribute("cancel", cancel);
+
+        return "cancellation_success"; // templates/cancellation_success.html
+    }
+
+
+    /**
+     * 내 취소 내역 목록을 보여줍니다.
+     */
+    @GetMapping("/cancellations/my")
+    public String viewMyCancellations(Model model, HttpSession session) {
+        String cno = (String) session.getAttribute("cno");
+        if (cno == null) {
+            return "redirect:/members/login";
+        }
+
+        // 서비스로부터 특정 고객의 모든 취소 내역을 받아옵니다.
+        List<Cancel> cancels = mainService.getMyCancellations(cno);
+        model.addAttribute("cancels", cancels);
+
+        return "my_cancellations"; // templates/my_cancellations.html
+    }
 }

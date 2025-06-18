@@ -2,15 +2,13 @@ package com.admin.CNU_airline_reservation;
 
 
 import com.admin.CNU_airline_reservation.entity.*;
-import com.admin.CNU_airline_reservation.repository.AirplaneRepository;
-import com.admin.CNU_airline_reservation.repository.CustomerRepository;
-import com.admin.CNU_airline_reservation.repository.ReserveRepository;
-import com.admin.CNU_airline_reservation.repository.SeatsRepository;
+import com.admin.CNU_airline_reservation.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class MainService {
     private final AirplaneRepository airplaneRepository;
     private final CustomerRepository customerRepository;
-    private final ReserveRepository reserveRepository;
     private final SeatsRepository seatsRepository;
+    private final ReserveRepository reserveRepository;
+    private final CancelRepository cancelRepository;
+
+    public List<Airplane> findAllAirplanes() {
+        return airplaneRepository.findAllWithSeatsOrderByPriceAsc();
+    }
 
     // 1. 반환 타입을 Optional<Customer>로 변경
     public Optional<Customer> login(String cno, String password) {
@@ -66,7 +69,19 @@ public class MainService {
         Seats seats = seatsRepository.findById(seatsPK)
                 .orElseThrow(() -> new IllegalArgumentException("해당 좌석 정보를 찾을 수 없습니다."));
 
-        // (추가 로직: 해당 좌석의 재고(no_of_seats)가 남아있는지 확인하는 로직이 필요할 수 있습니다.)
+        // 3. 좌석 재고 확인 및 차감 로직 (핵심 변경 부분)
+        // ----------------------------------------------------
+        // 현재 좌석 수를 가져옵니다.
+        int currentSeats = seats.getNo_of_seats();
+
+        // 재고가 0 이하인지 확인합니다.
+        if (currentSeats <= 0) {
+            throw new IllegalStateException("남은 좌석이 없습니다.");
+        }
+
+        // 재고가 있다면 1을 감소시킨 값을 setter로 설정합니다.
+        seats.setNo_of_seats(currentSeats - 1);
+
 
         // 3. 저장할 Reserve 엔티티 객체를 빌더로 생성
         //    수정된 엔티티의 모든 필드에 값을 채워줍니다.
@@ -101,20 +116,92 @@ public class MainService {
     }
 
     public List<Reserve> getMyReservations(String cno) {
-        return reserveRepository.findByCustomerCnoWithDetails(cno);
+        return reserveRepository.findActiveReservationsByCustomerCno(cno);
     }
 
-    public List<Airplane> findAllAirplanes() {
-        return airplaneRepository.findAllWithSeatsOrderByPriceAsc();
+    /**
+     * 예약을 취소하고, 취소 내역을 생성합니다.
+     */
+    @Transactional
+    public Cancel cancelReservation(String cno, String flightNo, LocalDateTime departureDateTime, String seatClass) {
+        // --- 1. 취소할 예약이 실제로 존재하는지 확인 ---
+        ReservePK reservePK = new ReservePK(cno, flightNo, departureDateTime, seatClass);
+        Reserve reserveToCancel = reserveRepository.findById(reservePK)
+                .orElseThrow(() -> new IllegalArgumentException("취소할 예약 정보를 찾을 수 없습니다."));
+
+        // --- 2. 이미 취소된 예약인지 확인 ---
+        CancelPK cancelPK = new CancelPK(cno, flightNo, departureDateTime, seatClass);
+        if (cancelRepository.existsById(cancelPK)) {
+            throw new IllegalStateException("이미 취소된 예약입니다.");
+        }
+
+        // --- 2. 환불 금액 계산 로직 (핵심 수정 부분) ---
+        // ----------------------------------------------------
+        LocalDate today = LocalDate.now(); // 취소 요청이 들어온 오늘 날짜
+        LocalDate departureDate = reserveToCancel.getDepartureDateTime().toLocalDate(); // 항공편의 출발 날짜 (시간 제외)
+
+        // 출발일까지 남은 일수 계산
+        long daysUntilDeparture = ChronoUnit.DAYS.between(today, departureDate);
+
+        int payment = reserveToCancel.getPayment(); // 원래 결제했던 금액
+        int penaltyFee = 0; // 위약금
+
+        if (daysUntilDeparture >= 15) {
+            // 15일 이상 남았을 경우
+            penaltyFee = 150000;
+        } else if (daysUntilDeparture >= 4) {
+            // 4일에서 14일 사이 남았을 경우
+            penaltyFee = 180000;
+        } else if (daysUntilDeparture >= 1) {
+            // 1일에서 3일 사이 남았을 경우
+            penaltyFee = 250000;
+        } else {
+            // 당일 또는 날짜가 지난 경우 (daysUntilDeparture <= 0)
+            penaltyFee = payment; // 전액 위약금
+        }
+
+        // 최종 환불액 계산 (환불액이 음수가 되지 않도록 처리)
+        int finalRefundAmount = Math.max(0, payment - penaltyFee);
+        // ----------------------------------------------------
+
+
+        // --- 3. 좌석 수(재고)를 1 증가시킴 ---
+        Seats seats = reserveToCancel.getSeatsRel();
+        seats.setNo_of_seats(seats.getNo_of_seats() + 1);
+        seatsRepository.save(seats); // 변경된 좌석 정보를 DB에 반영
+
+        // --- 4. Cancel 엔티티를 생성하여 DB에 저장 ---
+        Cancel newCancel = Cancel.builder()
+                // 복합 키(PK) 필드 설정
+                .customer(reserveToCancel.getCustomer())
+                .flightNo(reserveToCancel.getFlightNo())
+                .departureDateTime(reserveToCancel.getDepartureDateTime())
+                .seatClass(reserveToCancel.getSeatClass())
+                // 관계(조회용) 필드 설정
+                .customerRel(reserveToCancel.getCustomerRel())
+                .seatsRel(reserveToCancel.getSeatsRel())
+                // 일반 데이터 필드 설정
+                .refund(finalRefundAmount) // 환불 금액은 결제 금액과 동일하다고 가정
+                .cancelDateTime(LocalDateTime.now())
+                .build();
+
+        return cancelRepository.save(newCancel);
     }
 
-//    @Transactional
-//    public void cancelReservation(Long reservationId, Long memberId) {
-//        Reserve reserve = reserveRepository.findByIdAndMemberId(reservationId, memberId);
-//        if (reserve == null) {
-//            throw new IllegalArgumentException("예약을 찾을 수 없거나 취소 권한이 없습니다.");
-//        }
-//
-//        reserveRepository.deleteReservation(reservationId, memberId);
-//    }
+    /**
+     * 특정 취소 내역 한 건을 조회합니다.
+     */
+    public Cancel getCancellation(String cno, String flightNo, LocalDateTime departureDateTime, String seatClass) {
+        CancelPK cancelId = new CancelPK(cno, flightNo, departureDateTime, seatClass);
+        return cancelRepository.findById(cancelId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 취소 내역을 찾을 수 없습니다."));
+    }
+
+    /**
+     * 특정 사용자의 모든 취소 내역 목록을 조회합니다.
+     */
+    public List<Cancel> getMyCancellations(String cno) {
+        return cancelRepository.findByCustomer(cno);
+    }
+
 }

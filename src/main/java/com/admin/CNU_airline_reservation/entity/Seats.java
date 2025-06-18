@@ -1,10 +1,7 @@
 package com.admin.CNU_airline_reservation.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -40,6 +37,7 @@ public class Seats {
     @Column(nullable = false)
     private Integer price;
 
+    @Setter
     @Column(nullable = false)
     private Integer no_of_seats;
 

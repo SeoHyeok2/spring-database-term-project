@@ -16,33 +16,46 @@
                 <div th:each="reserve : ${reserves}" class="card reserve-card">
                     <div class="reserve-info">
                         <div>
-                            <strong>예약 번호:</strong> <span th:text="${reserve.flightNo}"></span>
+                            <strong>항공사:</strong> <span th:text="${reserve.seatsRel.airplane.airline}"></span>
                         </div>
                         <div>
-                            <strong>항공편:</strong> <span th:text="${reserve.flight.flightName}"></span>
+                            <strong>항공편:</strong> <span th:text="${reserve.flightNo}"></span>
                         </div>
                         <div>
                             <strong>출발:</strong> 
-                            <span th:text="${reserve.flight.departureAirport}"></span>
-                            (<span th:text="${#temporals.format(reserve.flight.departureTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            <span th:text="${reserve.seatsRel.airplane.departureAirport}"></span>
+                            (<span th:text="${#temporals.format(reserve.departureDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
                         </div>
                         <div>
                             <strong>도착:</strong> 
-                            <span th:text="${reserve.flight.arrivalAirport}"></span>
-                            (<span th:text="${#temporals.format(reserve.flight.arrivalTime, 'yyyy-MM-dd HH:mm')}"></span>)
+                            <span th:text="${reserve.seatsRel.airplane.arrivalAirport}"></span>
+                            (<span th:text="${#temporals.format(reserve.seatsRel.airplane.arrivalDateTime, 'yyyy-MM-dd HH:mm')}"></span>)
                         </div>
                         <div>
-                            <strong>가격:</strong> 
-                            <span th:text="${#numbers.formatInteger(reserve.flight.fee, 0, 'COMMA') + '원'}"></span>
+                            <strong>결제 금액:</strong>
+                            <span th:text="${#numbers.formatInteger(reserve.payment, 0, 'COMMA') + '원'}"></span>
                         </div>
                         <div>
                             <strong>예약일:</strong> 
-                            <span th:text="${#temporals.format(reserve.reservationDate, 'yyyy-MM-dd HH:mm')}"></span>
+                            <span th:text="${#temporals.format(reserve.reserveDateTime, 'yyyy-MM-dd HH:mm')}"></span>
                         </div>
                         <div class="reserve-actions">
-                            <form th:action="@{/reserves/{id}/cancel(id=${reserve.reservationId})}"
-                                  method="post" 
-                                  onsubmit="return confirm('정말로 이 예약을 취소하시겠습니까?');">
+                            <form th:action="@{/reservations/cancel}"
+                                  method="post"
+                                  onsubmit="return confirm(
+                                      '정말로 이 예약을 취소하시겠습니까?\n\n' +
+                                      '--- 취소 위약금 규정 ---\n' +
+                                      '출발 15일 이전: 150,000원\n' +
+                                      '출발 14일 ~ 4일 전: 180,000원\n' +
+                                      '출발 3일 전 ~ 1일 전: 250,000원\n' +
+                                      '출발 당일: 전액 환불 불가\n\n' +
+                                      '취소 후에는 되돌릴 수 없습니다.'
+                                  );">
+
+                                <input type="hidden" name="flightNo" th:value="${reserve.flightNo}">
+                                <input type="hidden" name="departureDateTime" th:value="${reserve.departureDateTime}">
+                                <input type="hidden" name="seatClass" th:value="${reserve.seatClass}">
+
                                 <button type="submit" class="btn btn-danger">예약 취소</button>
                             </form>
                         </div>
