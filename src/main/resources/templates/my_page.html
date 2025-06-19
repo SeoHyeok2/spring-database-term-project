@@ -139,27 +139,30 @@
 
     <script th:inline="javascript">
 
-        // 1. 페이지가 완전히 로드되었을 때 이 함수가 실행됩니다.
+        // 페이지 로딩이 완료되면 실행
         window.onload = function() {
-            // Controller가 Model에 담아준 현재 필터 상태를 가져옵니다. (페이지 최초 로드 시 'all')
+            // [[${currentFilter}]] 와 같이 서버에서 넘겨준 초기 필터 값을 설정
             const currentFilterFromServer = 'all';
 
-            // filterHistory 함수를 호출하여 화면을 올바른 상태로 복원합니다.
+            // 초기 필터 값으로 화면을 설정
             if (currentFilterFromServer) {
                 filterHistory(currentFilterFromServer);
             }
         };
 
-        // 2. 이 함수는 버튼 클릭 시, 그리고 페이지 로드 시 모두 사용됩니다.
+        /**
+         * 필터 종류('all', 'reserves', 'cancels')에 따라
+         * 예약/취소 내역을 보여주거나 숨기고, 버튼 스타일을 변경하는 함수
+         */
         function filterHistory(filterType) {
             const reservesSection = document.getElementById('reserves-section');
             const cancelsSection = document.getElementById('cancels-section');
             const allButtons = document.querySelectorAll('.filter-btn-group .btn');
 
-            // 날짜 검색 시 현재 필터 상태를 함께 보내기 위해 hidden input 값을 업데이트합니다.
+            // 날짜 검색 시 필터 상태를 유지하기 위해 hidden input에 현재 필터값 저장
             document.getElementById('current-filter-type').value = filterType;
 
-            // 클릭된 버튼에 따라 각 섹션을 보여주거나 숨깁니다.
+            // 필터 값에 따라 목록을 표시하거나 숨김
             if (filterType === 'all') {
                 reservesSection.style.display = 'block';
                 cancelsSection.style.display = 'block';
@@ -171,11 +174,12 @@
                 cancelsSection.style.display = 'block';
             }
 
-            // 활성화된 버튼 스타일을 변경합니다.
+            // 모든 버튼을 비활성 상태로
             allButtons.forEach(btn => {
                 btn.classList.remove('active', 'btn-primary');
                 btn.classList.add('btn-secondary');
             });
+            // 선택된 버튼만 활성 상태로
             const activeButton = document.getElementById('btn-' + filterType);
             activeButton.classList.add('active', 'btn-primary');
             activeButton.classList.remove('btn-secondary');

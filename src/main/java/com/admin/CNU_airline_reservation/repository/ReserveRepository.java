@@ -2,7 +2,7 @@ package com.admin.CNU_airline_reservation.repository;
 
 import com.admin.CNU_airline_reservation.dto.ReservationStats;
 import com.admin.CNU_airline_reservation.entity.Reserve;
-import com.admin.CNU_airline_reservation.entity.ReservePK; // 1. ID 타입을 ReserveId로 변경
+import com.admin.CNU_airline_reservation.entity.ReservePK;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,14 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-// 1. Reserve의 PK는 ReserveId이므로, 제네릭 타입을 <Reserve, ReserveId>로 지정
 public interface ReserveRepository extends JpaRepository<Reserve, ReservePK> {
 
     /**
-     * 특정 고객의 예약 목록 중, Cancel 테이블에 존재하지 않는 (취소되지 않은) 예약만 조회합니다.
+     * 특정 고객의 특정 기간 내 예약 목록 중, 취소되지 않은 '활성' 예약만 조회
+     * NOT EXISTS 서브쿼리: Cancel 테이블에 동일한 키를 가진 데이터가 없는 예약만 필터링
      */
     @Query("SELECT r FROM Reserve r WHERE r.customer = :cno " +
             "AND r.reserveDateTime BETWEEN :startDate AND :endDate " +
@@ -33,6 +32,9 @@ public interface ReserveRepository extends JpaRepository<Reserve, ReservePK> {
             @Param("endDate") LocalDateTime endDate
     );
 
+    /**
+     * 특정 고객의 모든 '활성' 예약 목록을 조회
+     */
     @Query("SELECT r FROM Reserve r WHERE r.customer = :cno " +
             "AND NOT EXISTS (" +
             "  SELECT c FROM Cancel c WHERE c.customer = r.customer " +
@@ -42,6 +44,12 @@ public interface ReserveRepository extends JpaRepository<Reserve, ReservePK> {
             ")")
     List<Reserve> findActiveReservationsByCustomerCno(@Param("cno") String cno);
 
+
+    /**
+     * 운항편명과 좌석등급별 예약 수 및 총 결제 금액에 대한 통계를 조회 (관리자용)
+     * ROLLUP()와 같은 DB 고유 함수를 사용하기 위해 Native Query로 작성
+     * ORDER BY GROUPING(): ROLLUP으로 생성된 집계 행이 결과의 마지막에 오도록 정렬
+     */
     @Query(value = "SELECT " +
             "  CASE GROUPING(R.flight_no) " +
             "    WHEN 1 THEN '모든 운항편명' " +
@@ -57,8 +65,8 @@ public interface ReserveRepository extends JpaRepository<Reserve, ReservePK> {
             "ORDER BY GROUPING(R.flight_no), R.flight_no, GROUPING(R.seat_class), R.seat_class", nativeQuery = true)
     List<ReservationStats> findReservationStats();
 
-    // 4. 아래 메소드들은 JpaRepository의 기본 기능을 사용하므로 모두 삭제합니다.
-    // findById(id) -> 기본 제공
-    // saveReservation(...) -> repository.save(entity) 사용
-    // deleteReservation(...) -> repository.delete(entity) 또는 deleteById(id) 사용
+    /**
+     * findById(), save(), findAll(), delete() 등의 기본 메소드는
+     * JpaRepository에 이미 구현되어 있으므로 따로 작성할 필요가 없음
+     */
 }

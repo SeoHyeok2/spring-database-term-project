@@ -7,17 +7,16 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-// 1. Customer의 PK 타입이 String이므로, JpaRepository의 두 번째 제네릭 타입을 String으로 지정
 public interface CustomerRepository extends JpaRepository<Customer, String> {
 
     /**
-     * 이메일과 비밀번호로 고객을 찾는 메소드 (로그인 기능)
-     * 2. @Query 없이 메소드 이름만으로 쿼리를 자동 생성
-     * (엔티티의 필드명 'email', 'passwd'와 일치해야 함)
+     * 회원번호(cno)와 비밀번호(passwd)로 고객을 조회
+     * Spring Data JPA의 쿼리 메소드 기능을 사용하여, 메소드 이름만으로 'findByCnoAndPasswd' 쿼리를 자동 생성
      */
     Optional<Customer> findByCnoAndPasswd(String cno, String passwd);
 
-    // 3. 아래 메소드들은 모두 삭제합니다.
-    // findById(id) -> JpaRepository가 이미 기본 제공
-    // saveMember(...) -> JPA에서는 repository.save(customer객체)를 사용하므로 불필요
+    /**
+     * findById(), save(), findAll(), delete() 등의 기본 메소드는
+     * JpaRepository에 이미 구현되어 있으므로 따로 작성할 필요가 없음
+     */
 }

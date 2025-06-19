@@ -6,17 +6,17 @@ import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+// Reserve 엔티티의 복합 기본 키를 정의하는 클래스
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservePK implements Serializable {
 
-    // Customer의 PK와 Seats의 PK를 구성하는 모든 필드를 기본 타입으로 선언
-    private String customer; // Customer의 PK(cno) 타입이 String이므로
+    private String customer;
     private String flightNo;
     private LocalDateTime departureDateTime;
     private String seatClass;
 
-    // equals and hashCode 구현...
+    // JPA가 영속성 컨텍스트 내에서 엔티티의 동일성을 비교하기 위해 사용하는 필수 메소드들
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

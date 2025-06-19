@@ -12,6 +12,7 @@
                     <strong th:text="${param.departureAirport}"></strong> →
                     <strong th:text="${param.arrivalAirport}"></strong>
                     <span th:text="${formattedDate}"></span>
+                    <span th:text="${seatClass}"></span>
                 </p>
             </div>
             
@@ -21,13 +22,13 @@
             </div>
 
             <div class="sort-options" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
-                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, sort='time')}"
+                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, seatClass=${param.seatClass}, sort='time')}"
                    class="btn" th:classappend="${sortOption == 'time' ? 'btn-primary' : 'btn-secondary'}">출발 시간순</a>
 
-                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, sort='price')}"
+                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, seatClass=${param.seatClass}, sort='price')}"
                    class="btn" th:classappend="${sortOption == 'price' ? 'btn-primary' : 'btn-secondary'}">낮은 요금순</a>
 
-                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, sort='seats')}"
+                <a th:href="@{/flights/search/results(departureAirport=${param.departureAirport}, arrivalAirport=${param.arrivalAirport}, departureDate=${param.departureDate}, seatClass=${param.seatClass}, sort='seats')}"
                    class="btn" th:classappend="${sortOption == 'seats' ? 'btn-primary' : 'btn-secondary'}">잔여 좌석순</a>
             </div>
 
